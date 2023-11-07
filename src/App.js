@@ -17,6 +17,7 @@ class App extends React.Component {
             BOARD_WRITER: '',
             BOARD_SUBJECT: '',
             BOARD_CONTENT: '',
+            isDelete: false,
             boardView: null,
         };
     }
@@ -28,6 +29,7 @@ class App extends React.Component {
           BOARD_WRITER: '',
           BOARD_SUBJECT: '',
           BOARD_CONTENT: '',
+          isDelete: false,
           boardView: null,
       });
     };
@@ -67,12 +69,14 @@ class App extends React.Component {
 
     //delete
     handleDelete = (seq) => {
-        // e.preventDefault();
         const data = { BOARD_SEQ: seq};
         axios.post('api/board/delete', data)
             .then(response => {
                 this.initState();
-                this.setState({ boards: response.data.boards });
+                this.setState({
+                    boards: response.data.boards,
+                    isDelete: response.data.isDelete,
+                });
             })
             .catch(error => {
                 console.error('POST 요청 에러:', error);
@@ -89,7 +93,10 @@ class App extends React.Component {
         axios.get('api/board/'+seq)
             .then(response => {
                 this.initState();
-                this.setState({ boardView: response.data.boardView });
+                this.setState({
+                    boardView: response.data.boardView,
+                    isDelete: response.data.isDelete,
+                });
             })
             .catch(error => {
                 console.error('GET 요청 에러:', error);
@@ -114,13 +121,18 @@ class App extends React.Component {
     }
 
     render() {
-        const {boards, boardView} = this.state;
+        const {boards, boardView, isDelete} = this.state;
         return (
             <div className="App">
                 <h1>게시판</h1>
                 
                 {/*글 목록*/}
                 {boards.length > 0 && <Board boards={boards} handleBoardView={this.handleBoardView} handleDelete={this.handleDelete} />}
+
+                {/*삭제된 글*/}
+                {isDelete && (
+                    <div>글이 삭제되었습니다...</div>
+                )}
 
                 {/*글 작성*/}
                 {boardView == null  && (

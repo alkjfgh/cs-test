@@ -44,13 +44,12 @@ router.get('/board/:BOARD_SEQ', async (req, res) => {
             }
         }
     );
-    res.json({boardView:result[0][0]});
+    res.json({boardView:result[0][0], isDelete: result[0][0]===undefined});
     con.release();
 });
 
 //글 삭제
 router.post('/board/delete', async (req, res) => {
-    // console.log(req.body);
     const con = await getConnection();
     await con.query(
         'DELETE FROM board_table WHERE BOARD_SEQ = ?',
