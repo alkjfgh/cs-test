@@ -8,18 +8,21 @@ import axios from 'axios'
 // import logo from './logo.svg';
 
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-        boards: [],
-        BOARD_WRITER: '',
-        BOARD_SUBJECT: '',
-        BOARD_CONTENT: '',
-        boardView: null,
-    };
-  }
+    
+    //생성자
+    constructor(props) {
+        super(props);
+        this.state = {
+            boards: [],
+            BOARD_WRITER: '',
+            BOARD_SUBJECT: '',
+            BOARD_CONTENT: '',
+            boardView: null,
+        };
+    }
 
-  initState = () => {
+    //state 초기화
+    initState = () => {
       this.setState({
           boards: [],
           BOARD_WRITER: '',
@@ -27,19 +30,21 @@ class App extends React.Component {
           BOARD_CONTENT: '',
           boardView: null,
       });
-  };
+    };
 
-  //페이지 로딩전 값 가져오기
-  componentDidMount() {
+    //페이지 로딩전 값 가져오기
+    componentDidMount() {
       fetch('api/board')
           .then(res=>res.json())
           .then(data=>this.setState({ boards: data.boards,boardView: null }));
-  };
+    };
 
+    //input 값 가져오기
     handleChange = (e) => {
         this.setState({ [e.target.name]: e.target.value });
     };
 
+    //submit
     handleSubmit = (e) => {
         e.preventDefault();
         if(this.isInputEmpty()){
@@ -53,7 +58,6 @@ class App extends React.Component {
                 .then(response => {
                     this.initState();
                     this.setState({ boards: response.data.boards });
-                    // this.setState({ boardView: null });
                 })
                 .catch(error => {
                     console.error('POST 요청 에러:', error);
@@ -61,6 +65,7 @@ class App extends React.Component {
         }
     };
 
+    //delete
     handleDelete = (seq) => {
         // e.preventDefault();
         const data = { BOARD_SEQ: seq};
@@ -68,67 +73,72 @@ class App extends React.Component {
             .then(response => {
                 this.initState();
                 this.setState({ boards: response.data.boards });
-                // this.setState({ boardView: null });
             })
             .catch(error => {
                 console.error('POST 요청 에러:', error);
             });
     };
 
-    isInputEmpty = () => {
-        return this.state.BOARD_WRITER!=='' && this.state.BOARD_SUBJECT!=='' && this.state.BOARD_CONTENT!=='';
-    }
-
+    //enter event
     handleEnter = (e) => {
         if(e.code === 'Enter' && this.isInputEmpty()) this.handleSubmit(e);
     }
 
+    //글 보기
     handleBoardView = (seq) => {
         axios.get('api/board/'+seq)
             .then(response => {
                 this.initState();
                 this.setState({ boardView: response.data.boardView });
-                // this.setState({ boards: [] });
             })
             .catch(error => {
                 console.error('GET 요청 에러:', error);
             });
     }
 
+    //메인 이동
     handleMain = () => {
         axios.get('api/board')
             .then(response => {
                 this.initState();
                 this.setState({ boards: response.data.boards });
-                // this.setState({ boardView: null });
             })
             .catch(error => {
                 console.error('GET 요청 에러:', error);
             });
     }
 
-  render() {
-    const {boards, boardView} = this.state;
-    return (
-        <div className="App">
-            <h1>게시판</h1>
-            {boards.length > 0 && <Board boards={boards} handleBoardView={this.handleBoardView} handleDelete={this.handleDelete} />}
+    //input 비어있는지 체크
+    isInputEmpty = () => {
+        return this.state.BOARD_WRITER!=='' && this.state.BOARD_SUBJECT!=='' && this.state.BOARD_CONTENT!=='';
+    }
 
-            {boardView == null  && (
-                <CreatePostForm
-                    BOARD_WRITER={this.state.BOARD_WRITER}
-                    BOARD_SUBJECT={this.state.BOARD_SUBJECT}
-                    BOARD_CONTENT={this.state.BOARD_CONTENT}
-                    handleChange={this.handleChange}
-                    handleSubmit={this.handleSubmit}
-                    handleEnter={this.handleEnter}
-                />
-            )}
+    render() {
+        const {boards, boardView} = this.state;
+        return (
+            <div className="App">
+                <h1>게시판</h1>
+                
+                {/*글 목록*/}
+                {boards.length > 0 && <Board boards={boards} handleBoardView={this.handleBoardView} handleDelete={this.handleDelete} />}
 
-            {boardView != null && <BoardView boardView={boardView} handleMain={this.handleMain} />}
-        </div>
-    );
-  }
+                {/*글 작성*/}
+                {boardView == null  && (
+                    <CreatePostForm
+                        BOARD_WRITER={this.state.BOARD_WRITER}
+                        BOARD_SUBJECT={this.state.BOARD_SUBJECT}
+                        BOARD_CONTENT={this.state.BOARD_CONTENT}
+                        handleChange={this.handleChange}
+                        handleSubmit={this.handleSubmit}
+                        handleEnter={this.handleEnter}
+                    />
+                )}
+    
+                {/*글 보기*/}
+                {boardView != null && <BoardView boardView={boardView} handleMain={this.handleMain} />}
+            </div>
+        );
+      }
 }
 
 export default App;

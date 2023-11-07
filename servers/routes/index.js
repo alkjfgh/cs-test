@@ -2,17 +2,7 @@ const express = require('express');
 const router = express.Router();
 const getConnection = require('../db/db');
 
-router.get('/', (req, res)=>res.json({username:'bryan~~~'}));
-
-router.get('/group', (req, res)=>res.json({username:'dev group. bryan'}));
-
-router.post('/input', (req, res)=> {
-    //클라이언트에서 보낸 값
-    console.log(req.body.username);
-    //서버에서 보내는 값
-    res.json({username:'test post end'});
-});
-
+//게시판
 router.get('/board', async (req, res) => {
     const con = await getConnection();
     const results = await con.query('select * from board_table_view');
@@ -20,6 +10,7 @@ router.get('/board', async (req, res) => {
     con.release();
 });
 
+//글 작성
 router.post('/board', async (req, res) => {
     const con = await getConnection();
     await con.query(
@@ -38,8 +29,7 @@ router.post('/board', async (req, res) => {
     con.release();
 });
 
-
-
+//글 보기
 router.get('/board/:BOARD_SEQ', async (req, res) => {
     const BOARD_SEQ = req.params.BOARD_SEQ;
     const con = await getConnection();
@@ -58,6 +48,7 @@ router.get('/board/:BOARD_SEQ', async (req, res) => {
     con.release();
 });
 
+//글 삭제
 router.post('/board/delete', async (req, res) => {
     // console.log(req.body);
     const con = await getConnection();
