@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 #db
-/servers/db/db.js
+/servers/db/db_config.json
 
 # dependencies
 /node_modules
