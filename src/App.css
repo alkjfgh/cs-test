@@ -69,6 +69,9 @@ td {
 td:first-child {
   border-left: 1px solid #c6c9cc;
 }
+td:nth-child(2) {
+  cursor: pointer;
+}
 tr:nth-child(even) td {
   background: #eaeaed;
 }

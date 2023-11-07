@@ -1,0 +1,8 @@
+{
+  "host": "localhost",
+  "user": "admin",
+  "password": "0000",
+  "database": "cs_test",
+  "timezone": "+09:00",
+  "connectionLimit": 30
+}

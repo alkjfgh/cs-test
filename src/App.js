@@ -1,28 +1,40 @@
 import React from 'react';
-// import logo from './logo.svg';
+import Board from './Board';
+import CreatePostForm from './CreatePostForm';
+import BoardView from './BoardView';
 import './App.css';
+import './css/boardView.css'
 import axios from 'axios'
+// import logo from './logo.svg';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
         boards: [],
+        BOARD_WRITER: '',
         BOARD_SUBJECT: '',
         BOARD_CONTENT: '',
-      // username:null,
+        boardView: null,
     };
   }
 
+  initState = () => {
+      this.setState({
+          boards: [],
+          BOARD_WRITER: '',
+          BOARD_SUBJECT: '',
+          BOARD_CONTENT: '',
+          boardView: null,
+      });
+  };
+
   //페이지 로딩전 값 가져오기
   componentDidMount() {
-      // fetch('api/group')
-      //     .then(res=>res.json())
-      //     .then(data=>this.setState({username:data.username}
       fetch('api/board')
           .then(res=>res.json())
-          .then(data=>this.setState({ boards: data.boards }));
-  }
+          .then(data=>this.setState({ boards: data.boards,boardView: null }));
+  };
 
     handleChange = (e) => {
         this.setState({ [e.target.name]: e.target.value });
@@ -30,116 +42,90 @@ class App extends React.Component {
 
     handleSubmit = (e) => {
         e.preventDefault();
-        const data = { BOARD_SUBJECT: this.state.BOARD_SUBJECT, BOARD_CONTENT: this.state.BOARD_CONTENT};
-        this.setState({BOARD_SUBJECT: '', BOARD_CONTENT: ''});
-        axios.post('api/board', data)
-            .then(response => {
-                this.setState({ boards: response.data.boards });
-            })
-            .catch(error => {
-                console.error('POST 요청 에러:', error);
-            });
+        if(this.isInputEmpty()){
+            const data = {
+                BOARD_WRITER: this.state.BOARD_WRITER,
+                BOARD_SUBJECT: this.state.BOARD_SUBJECT,
+                BOARD_CONTENT: this.state.BOARD_CONTENT
+            };
+            this.setState({BOARD_WRITER: '', BOARD_SUBJECT: '', BOARD_CONTENT: ''});
+            axios.post('api/board', data)
+                .then(response => {
+                    this.initState();
+                    this.setState({ boards: response.data.boards });
+                    // this.setState({ boardView: null });
+                })
+                .catch(error => {
+                    console.error('POST 요청 에러:', error);
+                });
+        }
     };
 
-    handleDelete = (e) => {
-        e.preventDefault();
-        const data = { BOARD_SEQ: e.target.value};
+    handleDelete = (seq) => {
+        // e.preventDefault();
+        const data = { BOARD_SEQ: seq};
         axios.post('api/board/delete', data)
             .then(response => {
+                this.initState();
                 this.setState({ boards: response.data.boards });
+                // this.setState({ boardView: null });
             })
             .catch(error => {
                 console.error('POST 요청 에러:', error);
             });
     };
 
-  //인풋 변경 핸들
-  handleInputChange = (event) => {
-      this.setState({ username: event.target.value });
-  }
+    isInputEmpty = () => {
+        return this.state.BOARD_WRITER!=='' && this.state.BOARD_SUBJECT!=='' && this.state.BOARD_CONTENT!=='';
+    }
 
-  //포스트 요청 핸들
-  handlePostRequest = () => {
-    // 데이터 객체를 POST 요청에 포함시킬 수 있습니다.
-    const data = { username: this.state.username};
+    handleEnter = (e) => {
+        if(e.code === 'Enter' && this.isInputEmpty()) this.handleSubmit(e);
+    }
 
-    axios.post('api/input', data)
-        .then(response => {
-            console.log('POST 요청 응답:', response.data);
-            this.setState({username:response.data.username});
-        })
-        .catch(error => {
-            console.error('POST 요청 에러:', error);
-        });
-  }
+    handleBoardView = (seq) => {
+        axios.get('api/board/'+seq)
+            .then(response => {
+                this.initState();
+                this.setState({ boardView: response.data.boardView });
+                // this.setState({ boards: [] });
+            })
+            .catch(error => {
+                console.error('GET 요청 에러:', error);
+            });
+    }
 
-  handleBoardRequest = async () => {
-    axios.get('api/board')
-        .then(response => {
-            console.log('board 요청 응답:', response.data.boards);
-            this.setState({ boards: response.data.boards });
-        })
-        .catch(error => {
-            console.error('board 요청 에러:', error);
-        });
-  }
+    handleMain = (e) => {
+        axios.get('api/board')
+            .then(response => {
+                this.initState();
+                this.setState({ boards: response.data.boards });
+                // this.setState({ boardView: null });
+            })
+            .catch(error => {
+                console.error('GET 요청 에러:', error);
+            });
+    }
 
   render() {
-      const {boards} = this.state;
+    const {boards, boardView} = this.state;
     return (
         <div className="App">
             <h1>게시판</h1>
-            {/*{username ? `Hello ${username}` : 'Hello World'}*/}
-            {/*<input type="text" value={this.state.username} onChange={this.handleInputChange}/>*/}
-            {/*<button onClick={this.handlePostRequest}>Post test</button>*/}
-            {/*<button onClick={this.handleBoardRequest}>board</button>*/}
-            <div className="table-container">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>게시글 번호</th>
-                        <th>제목</th>
-                        <th>내용</th>
-                        <th>입력일시</th>
-                        <th>삭제</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {boards.map((board) => (
-                        <tr key={board.BOARD_SEQ}>
-                            <td>{board.BOARD_SEQ}</td>
-                            <td>{board.BOARD_SUBJECT}</td>
-                            <td>{board.BOARD_CONTENT}</td>
-                            <td>{board.INS_DATE}</td>
-                            <td><button onClick={this.handleDelete} type="button" value={board.BOARD_SEQ}>삭제</button></td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
+            {boards.length > 0 && <Board boards={boards} handleBoardView={this.handleBoardView} handleDelete={this.handleDelete} />}
 
-            <form onSubmit={this.handleSubmit}>
-                <label>
-                    제목:
-                    <input
-                        type="text"
-                        name="BOARD_SUBJECT"
-                        value={this.state.BOARD_SUBJECT}
-                        onChange={this.handleChange}
-                    />
-                </label>
-                <br />
-                <label>
-                    내용:
-                    <textarea
-                        name="BOARD_CONTENT"
-                        value={this.state.BOARD_CONTENT}
-                        onChange={this.handleChange}
-                    />
-                </label>
-                <br />
-                <button type="submit">게시글 작성</button>
-            </form>
+            {boardView == null  && (
+                <CreatePostForm
+                    BOARD_WRITER={this.state.BOARD_WRITER}
+                    BOARD_SUBJECT={this.state.BOARD_SUBJECT}
+                    BOARD_CONTENT={this.state.BOARD_CONTENT}
+                    handleChange={this.handleChange}
+                    handleSubmit={this.handleSubmit}
+                    handleEnter={this.handleEnter}
+                />
+            )}
+
+            {boardView != null && <BoardView boardView={boardView} handleMain={this.handleMain} />}
         </div>
     );
   }
