@@ -95,7 +95,7 @@ class App extends React.Component {
             });
     }
 
-    handleMain = (e) => {
+    handleMain = () => {
         axios.get('api/board')
             .then(response => {
                 this.initState();
